@@ -12,15 +12,20 @@ export const VoiceFeedback = ({ message, autoSpeak = true }: VoiceFeedbackProps)
   useEffect(() => {
     if (message && autoSpeak) {
       setIsVisible(true);
-      // Simulate speech synthesis
-      console.log("🔊 Speaking:", message);
       
-      // In a real implementation, use Web Speech API:
-      // const utterance = new SpeechSynthesisUtterance(message);
-      // window.speechSynthesis.speak(utterance);
+      // Use Web Speech API for actual speech
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.rate = 0.9;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+      window.speechSynthesis.cancel(); // Cancel any ongoing speech
+      window.speechSynthesis.speak(utterance);
 
-      const timer = setTimeout(() => setIsVisible(false), 3000);
-      return () => clearTimeout(timer);
+      const timer = setTimeout(() => setIsVisible(false), 4000);
+      return () => {
+        clearTimeout(timer);
+        window.speechSynthesis.cancel();
+      };
     }
   }, [message, autoSpeak]);
 
@@ -28,13 +33,14 @@ export const VoiceFeedback = ({ message, autoSpeak = true }: VoiceFeedbackProps)
 
   return (
     <div
-      className="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-card border-2 border-primary rounded-full px-8 py-4 shadow-2xl shadow-primary/40 animate-in fade-in slide-in-from-top-4"
+      className="fixed top-8 left-1/2 -translate-x-1/2 z-50 max-w-2xl w-full mx-4 bg-card border-4 border-primary rounded-3xl px-10 py-6 shadow-2xl shadow-primary/50 animate-in fade-in slide-in-from-top-4"
       role="status"
-      aria-live="polite"
+      aria-live="assertive"
+      aria-atomic="true"
     >
-      <div className="flex items-center gap-4">
-        <Volume2 className="h-8 w-8 text-primary animate-pulse" aria-hidden="true" />
-        <p className="text-accessible-base font-bold">{message}</p>
+      <div className="flex items-center gap-6">
+        <Volume2 className="h-12 w-12 text-primary animate-pulse flex-shrink-0" aria-hidden="true" />
+        <p className="text-accessible-xl font-bold leading-tight">{message}</p>
       </div>
     </div>
   );

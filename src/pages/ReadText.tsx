@@ -1,12 +1,13 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { VoiceFeedback } from "@/components/VoiceFeedback";
-import { FileText, ArrowLeft, Upload, Play, Pause } from "lucide-react";
+import { VoiceButton } from "@/components/VoiceButton";
+import { FileText, ArrowLeft, Play, Pause } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 
 const ReadText = () => {
-  const [voiceMessage, setVoiceMessage] = useState("Upload an image to read text");
+  const [voiceMessage, setVoiceMessage] = useState("Say Read or tap to upload");
   const [extractedText, setExtractedText] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isReading, setIsReading] = useState(false);
@@ -19,78 +20,67 @@ const ReadText = () => {
 
   const handleFileSelect = () => {
     setIsProcessing(true);
-    setVoiceMessage("Processing image and extracting text...");
+    setVoiceMessage("Processing...");
 
-    // Simulate OCR processing
     setTimeout(() => {
       const sampleTexts = [
         "Welcome to our store. Opening hours: Monday to Friday, 9 AM to 6 PM.",
-        "Please take a number and wait for your turn. Thank you for your patience.",
-        "Ingredients: Flour, Sugar, Eggs, Butter, Vanilla Extract, Baking Powder.",
-        "Meeting scheduled for tomorrow at 2:00 PM in Conference Room A.",
+        "Please take a number and wait. Thank you for your patience.",
+        "Ingredients: Flour, Sugar, Eggs, Butter, Vanilla Extract.",
       ];
       const text = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
       setExtractedText(text);
-      setVoiceMessage("Text extracted. Tap play to hear it read aloud.");
+      setVoiceMessage("Text extracted. Tap play.");
       setIsProcessing(false);
     }, 2000);
   };
 
   const toggleReading = () => {
     if (!extractedText) return;
-
     setIsReading(!isReading);
     if (!isReading) {
-      setVoiceMessage(`Reading: ${extractedText}`);
-      // Simulate reading completion
+      setVoiceMessage(extractedText);
       setTimeout(() => setIsReading(false), 5000);
     } else {
-      setVoiceMessage("Reading paused");
+      setVoiceMessage("Paused");
     }
+  };
+
+  const handleVoiceCommand = () => {
+    handleUpload();
   };
 
   return (
     <div className="min-h-screen bg-background">
       <VoiceFeedback message={voiceMessage} />
 
-      <main className="container max-w-3xl mx-auto px-6 py-12">
-        {/* Header */}
+      <main className="container max-w-4xl mx-auto px-6 py-12">
         <header className="flex items-center justify-between mb-12">
           <Button
             variant="outline"
             size="lg"
             onClick={() => navigate("/")}
-            aria-label="Go back to home"
+            aria-label="Go back"
           >
-            <ArrowLeft className="h-8 w-8" />
-            Back
+            <ArrowLeft className="h-10 w-10" />
           </Button>
-          <h1 className="text-4xl">Read Text</h1>
         </header>
 
-        {/* Image Preview Area */}
-        <Card className="mb-8 min-h-64 bg-card border-2 border-dashed border-primary/30 flex items-center justify-center relative overflow-hidden p-8">
+        {/* Voice Button */}
+        <div className="flex justify-center mb-12">
+          <VoiceButton onVoiceCommand={handleVoiceCommand} label="Say Read" />
+        </div>
+
+        {/* Text Display */}
+        <Card className="mb-12 min-h-80 bg-card border-4 border-primary/30 rounded-3xl flex items-center justify-center p-10">
           {isProcessing ? (
-            <div className="absolute inset-0 bg-primary/10 animate-pulse flex items-center justify-center">
-              <FileText className="h-32 w-32 text-primary animate-pulse" />
-            </div>
+            <FileText className="h-40 w-40 text-primary animate-pulse" aria-hidden="true" />
           ) : extractedText ? (
-            <div className="w-full space-y-6">
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <FileText className="h-12 w-12 text-primary" aria-hidden="true" />
-                <h2 className="text-accessible-lg font-bold">Extracted Text:</h2>
-              </div>
-              <p className="text-accessible-base leading-relaxed p-6 bg-secondary rounded-lg">
-                {extractedText}
-              </p>
-            </div>
+            <p className="text-accessible-xl leading-relaxed text-center font-bold">
+              {extractedText}
+            </p>
           ) : (
-            <div className="text-center space-y-4">
-              <FileText className="h-32 w-32 mx-auto text-muted-foreground" aria-hidden="true" />
-              <p className="text-accessible-lg text-muted-foreground">
-                Upload an image with text
-              </p>
-            </div>
+            <FileText className="h-40 w-40 text-muted-foreground" aria-hidden="true" />
           )}
         </Card>
 
@@ -100,18 +90,18 @@ const ReadText = () => {
             <Button
               size="xl"
               onClick={toggleReading}
-              className="w-full h-32 text-accessible-xl font-extrabold"
-              aria-label={isReading ? "Pause reading" : "Start reading text aloud"}
+              className="w-full h-40 text-accessible-2xl font-extrabold rounded-3xl shadow-2xl"
+              aria-label={isReading ? "Pause" : "Read aloud"}
             >
               {isReading ? (
                 <>
-                  <Pause className="h-16 w-16" />
+                  <Pause className="h-20 w-20" aria-hidden="true" />
                   Pause
                 </>
               ) : (
                 <>
-                  <Play className="h-16 w-16" />
-                  Read Aloud
+                  <Play className="h-20 w-20" aria-hidden="true" />
+                  Read
                 </>
               )}
             </Button>
@@ -119,13 +109,13 @@ const ReadText = () => {
 
           <Button
             variant="tactile"
-            size="lg"
+            size="xl"
             onClick={handleUpload}
-            className="w-full"
-            aria-label="Upload image to extract text"
+            className="w-full h-40 text-accessible-2xl font-bold rounded-3xl"
+            aria-label="Upload image"
           >
-            <Upload className="h-10 w-10" />
-            Upload Image
+            <FileText className="h-20 w-20" aria-hidden="true" />
+            Upload
           </Button>
 
           <input
@@ -134,15 +124,7 @@ const ReadText = () => {
             accept="image/*"
             className="hidden"
             onChange={handleFileSelect}
-            aria-label="File upload input"
           />
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-12 text-center">
-          <p className="text-accessible-base text-muted-foreground">
-            Upload an image containing text, and it will be read aloud to you.
-          </p>
         </div>
       </main>
     </div>

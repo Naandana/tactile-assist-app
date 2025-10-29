@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { VoiceFeedback } from "@/components/VoiceFeedback";
-import { AlertCircle, ArrowLeft, Phone, MapPin, CheckCircle } from "lucide-react";
+import { VoiceButton } from "@/components/VoiceButton";
+import { AlertCircle, ArrowLeft, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 
 const Emergency = () => {
-  const [voiceMessage, setVoiceMessage] = useState(
-    "This is the emergency page. Tap the SOS button or say 'Emergency' to send alert."
-  );
+  const [voiceMessage, setVoiceMessage] = useState("Say Emergency or tap SOS");
   const [isActivated, setIsActivated] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [isSent, setIsSent] = useState(false);
@@ -16,13 +15,13 @@ const Emergency = () => {
 
   const activateEmergency = () => {
     setIsActivated(true);
-    setVoiceMessage("Emergency alert activating in 5 seconds. Tap cancel to stop.");
+    setVoiceMessage("Emergency alert in 5 seconds");
 
     let count = 5;
     const timer = setInterval(() => {
       count--;
       setCountdown(count);
-      setVoiceMessage(`Emergency alert in ${count} seconds`);
+      setVoiceMessage(`Alert in ${count}`);
 
       if (count === 0) {
         clearInterval(timer);
@@ -33,92 +32,60 @@ const Emergency = () => {
 
   const sendEmergencyAlert = () => {
     setIsSent(true);
-    setVoiceMessage(
-      "Emergency alert sent. Your location has been shared with your emergency contact."
-    );
+    setVoiceMessage("Emergency alert sent. Location shared.");
   };
 
   const cancelEmergency = () => {
     setIsActivated(false);
     setCountdown(5);
-    setVoiceMessage("Emergency alert cancelled");
+    setVoiceMessage("Cancelled");
+  };
+
+  const handleVoiceCommand = () => {
+    if (!isSent && !isActivated) {
+      activateEmergency();
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
       <VoiceFeedback message={voiceMessage} />
 
-      <main className="container max-w-3xl mx-auto px-6 py-12">
-        {/* Header */}
+      <main className="container max-w-4xl mx-auto px-6 py-12">
         <header className="flex items-center justify-between mb-12">
           <Button
             variant="outline"
             size="lg"
             onClick={() => navigate("/")}
-            aria-label="Go back to home"
+            aria-label="Go back"
           >
-            <ArrowLeft className="h-8 w-8" />
-            Back
+            <ArrowLeft className="h-10 w-10" />
           </Button>
-          <h1 className="text-4xl">Emergency SOS</h1>
         </header>
 
-        {/* Status Card */}
-        {isSent ? (
-          <Card className="mb-8 p-12 bg-primary/10 border-2 border-primary text-center space-y-6">
-            <CheckCircle className="h-32 w-32 mx-auto text-primary" aria-hidden="true" />
-            <div className="space-y-4">
-              <h2 className="text-accessible-xl font-bold text-primary">Alert Sent Successfully</h2>
-              <p className="text-accessible-lg">
-                Your emergency contact has been notified and your location has been shared.
-              </p>
-            </div>
-          </Card>
-        ) : (
-          <Card className="mb-8 p-12 bg-card border-2 border-destructive/30 text-center space-y-6">
-            <AlertCircle
-              className={`h-32 w-32 mx-auto ${
-                isActivated ? "text-destructive animate-pulse" : "text-muted-foreground"
-              }`}
-              aria-hidden="true"
-            />
-            {isActivated && (
-              <div className="space-y-4">
-                <p className="text-accessible-2xl font-extrabold text-destructive">
-                  {countdown}
-                </p>
-                <p className="text-accessible-lg text-muted-foreground">
-                  Sending emergency alert...
-                </p>
-              </div>
-            )}
-          </Card>
-        )}
-
-        {/* Emergency Info */}
-        {!isSent && (
-          <div className="mb-8 space-y-4">
-            <Card className="p-6 flex items-start gap-4">
-              <Phone className="h-10 w-10 text-primary flex-shrink-0 mt-1" aria-hidden="true" />
-              <div>
-                <h3 className="text-accessible-lg font-bold mb-2">Emergency Contact</h3>
-                <p className="text-accessible-base text-muted-foreground">
-                  John Doe - (555) 123-4567
-                </p>
-              </div>
-            </Card>
-
-            <Card className="p-6 flex items-start gap-4">
-              <MapPin className="h-10 w-10 text-primary flex-shrink-0 mt-1" aria-hidden="true" />
-              <div>
-                <h3 className="text-accessible-lg font-bold mb-2">Your Location</h3>
-                <p className="text-accessible-base text-muted-foreground">
-                  Will be shared when alert is sent
-                </p>
-              </div>
-            </Card>
+        {/* Voice Button */}
+        {!isSent && !isActivated && (
+          <div className="flex justify-center mb-12">
+            <VoiceButton onVoiceCommand={handleVoiceCommand} label="Say Emergency" />
           </div>
         )}
+
+        {/* Status Display */}
+        <Card className="mb-12 aspect-square bg-card border-4 border-destructive/40 rounded-3xl flex items-center justify-center p-10">
+          {isSent ? (
+            <div className="text-center space-y-8">
+              <CheckCircle className="h-40 w-40 mx-auto text-primary" aria-hidden="true" />
+              <p className="text-accessible-2xl font-bold text-primary">Alert Sent</p>
+            </div>
+          ) : isActivated ? (
+            <div className="text-center space-y-8">
+              <AlertCircle className="h-40 w-40 mx-auto text-destructive animate-pulse" aria-hidden="true" />
+              <p className="text-accessible-2xl font-extrabold text-destructive">{countdown}</p>
+            </div>
+          ) : (
+            <AlertCircle className="h-40 w-40 text-muted-foreground" aria-hidden="true" />
+          )}
+        </Card>
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-6">
@@ -127,10 +94,10 @@ const Emergency = () => {
               variant="emergency"
               size="xl"
               onClick={activateEmergency}
-              className="w-full h-40 text-accessible-2xl"
-              aria-label="Activate emergency SOS alert"
+              className="w-full h-48 text-accessible-2xl rounded-3xl shadow-2xl"
+              aria-label="Send emergency SOS"
             >
-              <AlertCircle className="h-20 w-20" />
+              <AlertCircle className="h-24 w-24" aria-hidden="true" />
               SOS
             </Button>
           )}
@@ -140,8 +107,8 @@ const Emergency = () => {
               variant="outline"
               size="xl"
               onClick={cancelEmergency}
-              className="w-full h-32 text-accessible-xl font-bold border-4"
-              aria-label="Cancel emergency alert"
+              className="w-full h-40 text-accessible-2xl font-bold border-4 rounded-3xl"
+              aria-label="Cancel emergency"
             >
               Cancel
             </Button>
@@ -150,27 +117,19 @@ const Emergency = () => {
           {isSent && (
             <Button
               variant="tactile"
-              size="lg"
+              size="xl"
               onClick={() => {
                 setIsSent(false);
                 setIsActivated(false);
                 setCountdown(5);
-                setVoiceMessage("Ready to send another alert if needed");
+                setVoiceMessage("Ready");
               }}
-              className="w-full"
-              aria-label="Reset emergency alert"
+              className="w-full h-40 text-accessible-2xl font-bold rounded-3xl"
+              aria-label="Reset"
             >
               Reset
             </Button>
           )}
-        </div>
-
-        {/* Warning */}
-        <div className="mt-12 p-6 bg-destructive/10 rounded-lg">
-          <p className="text-accessible-base text-center">
-            <strong className="text-destructive">Important:</strong> Only use this feature in real
-            emergencies. Your location and alert will be sent to your designated emergency contact.
-          </p>
         </div>
       </main>
     </div>
