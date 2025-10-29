@@ -47,16 +47,21 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        voice: {
+          active: "hsl(var(--voice-active))",
+          inactive: "hsl(var(--voice-inactive))",
         },
+        glow: {
+          DEFAULT: "hsl(var(--glow))",
+          emergency: "hsl(var(--glow-emergency))",
+        },
+      },
+      fontSize: {
+        'accessible-sm': '1.25rem',
+        'accessible-base': '1.5rem',
+        'accessible-lg': '2rem',
+        'accessible-xl': '2.5rem',
+        'accessible-2xl': '3rem',
       },
       borderRadius: {
         lg: "var(--radius)",
