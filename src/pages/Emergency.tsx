@@ -26,16 +26,18 @@ const Emergency = () => {
   const activateEmergency = () => {
     setIsActivated(true);
     setVoiceMessage("Emergency mode activated. Alert will be sent in 5 seconds. Tap cancel to stop.");
-    speak("Emergency mode activated. Sending alert in 5 seconds.", { priority: "high" });
+    speak("Emergency mode activated. Sending alert in 5 seconds. Tap cancel to stop.");
 
     let count = 5;
     timerRef.current = setInterval(() => {
       count--;
       setCountdown(count);
-      setVoiceMessage(`Sending alert in ${count} seconds`);
-      speak(`${count}`, { priority: "high" });
-
-      if (count === 0) {
+      
+      if (count > 0) {
+        setVoiceMessage(`Sending alert in ${count} seconds`);
+        speak(`${count}`);
+      } else {
+        // Clear interval before sending alert to prevent overlap
         if (timerRef.current) clearInterval(timerRef.current);
         sendEmergencyAlert();
       }
@@ -44,8 +46,13 @@ const Emergency = () => {
 
   const sendEmergencyAlert = () => {
     setIsSent(true);
-    setVoiceMessage("Emergency alert sent successfully. Your location has been sent to emergency services and your emergency contact.");
-    speak("Emergency alert sent. Your location has been shared with emergency services and your emergency contact. Help is on the way.", { priority: "high" });
+    const message = "Emergency alert sent successfully. Your location has been shared with emergency services and your emergency contact. Help is on the way.";
+    setVoiceMessage(message);
+    
+    // Ensure the full message is spoken without interruption
+    setTimeout(() => {
+      speak(message, { slow: true });
+    }, 200);
   };
 
   const cancelEmergency = () => {

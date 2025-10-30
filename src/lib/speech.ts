@@ -50,24 +50,27 @@ export const speak = (text: string, options: { slow?: boolean; priority?: "high"
     utterance.voice = selectedVoice;
   }
 
-  // Set speech parameters for clarity
-  utterance.rate = options.slow ? 0.85 : 0.9; // Slightly slower for better comprehension
+  // Set speech parameters for natural, clear delivery
+  utterance.rate = options.slow ? 0.8 : 0.85; // Slower for better comprehension
   utterance.pitch = 1.0;
   utterance.volume = 1.0;
 
-  // Add slight pause between sentences for clarity
+  // Add natural pauses between sentences
+  let enhancedText = text;
   if (text.includes('.') || text.includes('!') || text.includes('?')) {
-    const sentences = text.split(/([.!?])\s+/);
-    let fullText = '';
-    sentences.forEach((sentence, index) => {
-      if (index % 2 === 0 && sentence.trim()) {
-        fullText += sentence + (sentences[index + 1] || '') + ' ... ';
-      }
-    });
-    utterance.text = fullText.trim();
+    // Add brief pause after punctuation for natural flow
+    enhancedText = text.replace(/([.!?])\s+/g, '$1  ');
   }
+  
+  utterance.text = enhancedText;
 
-  window.speechSynthesis.speak(utterance);
+  // Ensure previous speech is fully stopped before starting new one
+  window.speechSynthesis.cancel();
+  
+  // Small delay to ensure cancellation completes
+  setTimeout(() => {
+    window.speechSynthesis.speak(utterance);
+  }, 100);
 };
 
 // Load voices (some browsers load them asynchronously)

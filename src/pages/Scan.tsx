@@ -17,13 +17,14 @@ const Scan = () => {
   const handleScan = () => {
     setIsScanning(true);
     setVoiceMessage("Scanning image. Please wait.");
+    speak("Scanning image. Please wait.");
 
     setTimeout(() => {
       const objects = [
         "Coffee mug on a wooden table",
         "Black smartphone with cracked screen",
         "Clear water bottle, half full",
-        "Hardcover book titled 'The Great Gatsby'",
+        "Hardcover book titled The Great Gatsby",
         "Silver laptop computer, appears to be a MacBook",
         "Reading eyeglasses with black frames",
         "Red ceramic bowl",
@@ -32,7 +33,14 @@ const Scan = () => {
       ];
       const detected = objects[Math.floor(Math.random() * objects.length)];
       setScannedObject(detected);
-      setVoiceMessage(`Object detected. ${detected}.`);
+      const resultMessage = `Object detected. ${detected}`;
+      setVoiceMessage(resultMessage);
+      
+      // Speak the result after a brief delay to ensure smooth transition
+      setTimeout(() => {
+        speak(resultMessage, { slow: true });
+      }, 300);
+      
       setIsScanning(false);
     }, 2500);
   };

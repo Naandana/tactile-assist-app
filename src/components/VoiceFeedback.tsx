@@ -14,13 +14,17 @@ export const VoiceFeedback = ({ message, autoSpeak = true }: VoiceFeedbackProps)
     if (message && autoSpeak) {
       setIsVisible(true);
       
-      // Use enhanced speech utility
-      speak(message, { slow: true });
+      // Use enhanced speech utility with slight delay for smooth delivery
+      setTimeout(() => {
+        speak(message, { slow: true });
+      }, 150);
 
-      const timer = setTimeout(() => setIsVisible(false), 4000);
+      // Keep visible longer for longer messages
+      const displayTime = Math.max(4000, message.length * 50);
+      const timer = setTimeout(() => setIsVisible(false), displayTime);
+      
       return () => {
         clearTimeout(timer);
-        window.speechSynthesis.cancel();
       };
     }
   }, [message, autoSpeak]);

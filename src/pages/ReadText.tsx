@@ -23,7 +23,7 @@ const ReadText = () => {
     if (e.target.files && e.target.files[0]) {
       setIsProcessing(true);
       setVoiceMessage("Processing image. Extracting text. Please wait.");
-      speak("Image uploaded. Processing text.");
+      speak("Image uploaded successfully. Processing text. Please wait.");
 
       setTimeout(() => {
         const sampleTexts = [
@@ -36,7 +36,12 @@ const ReadText = () => {
         const text = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
         setExtractedText(text);
         setVoiceMessage("Text extracted successfully. Ready to read aloud.");
-        speak("Text extraction complete. Tap the read button to hear it.");
+        
+        // Speak confirmation after brief delay
+        setTimeout(() => {
+          speak("Text extraction complete. Tap the read button to hear it.");
+        }, 300);
+        
         setIsProcessing(false);
       }, 2500);
     }
@@ -47,20 +52,28 @@ const ReadText = () => {
     
     if (!isReading) {
       setIsReading(true);
-      setVoiceMessage("Reading text aloud now...");
-      speak(extractedText, { slow: true });
+      setVoiceMessage("Reading text aloud now.");
       
-      // Estimate reading time and auto-stop
-      const estimatedTime = (extractedText.split(' ').length / 2.5) * 1000;
+      // Start reading after brief delay
+      setTimeout(() => {
+        speak(extractedText, { slow: true });
+      }, 200);
+      
+      // Estimate reading time and auto-stop (average speaking rate: 2.5 words per second at slow speed)
+      const estimatedTime = (extractedText.split(' ').length / 2.5) * 1000 + 1000;
       setTimeout(() => {
         setIsReading(false);
         setVoiceMessage("Finished reading.");
+        speak("Finished reading.");
       }, estimatedTime);
     } else {
       setIsReading(false);
       window.speechSynthesis.cancel();
       setVoiceMessage("Reading paused.");
-      speak("Paused.");
+      
+      setTimeout(() => {
+        speak("Reading paused.");
+      }, 100);
     }
   };
 
