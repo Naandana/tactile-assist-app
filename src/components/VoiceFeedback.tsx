@@ -1,5 +1,6 @@
 import { Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { speak } from "@/lib/speech";
 
 interface VoiceFeedbackProps {
   message: string;
@@ -13,13 +14,8 @@ export const VoiceFeedback = ({ message, autoSpeak = true }: VoiceFeedbackProps)
     if (message && autoSpeak) {
       setIsVisible(true);
       
-      // Use Web Speech API for actual speech
-      const utterance = new SpeechSynthesisUtterance(message);
-      utterance.rate = 0.9;
-      utterance.pitch = 1;
-      utterance.volume = 1;
-      window.speechSynthesis.cancel(); // Cancel any ongoing speech
-      window.speechSynthesis.speak(utterance);
+      // Use enhanced speech utility
+      speak(message, { slow: true });
 
       const timer = setTimeout(() => setIsVisible(false), 4000);
       return () => {

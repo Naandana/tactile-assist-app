@@ -1,30 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { VoiceFeedback } from "@/components/VoiceFeedback";
 import { VoiceButton } from "@/components/VoiceButton";
 import { AlertCircle, ArrowLeft, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import { speak } from "@/lib/speech";
 
 const Emergency = () => {
-  const [voiceMessage, setVoiceMessage] = useState("Say Emergency or tap SOS");
+  const [voiceMessage, setVoiceMessage] = useState("Tap SOS for emergency or say Emergency");
   const [isActivated, setIsActivated] = useState(false);
   const [countdown, setCountdown] = useState(5);
   const [isSent, setIsSent] = useState(false);
   const navigate = useNavigate();
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   const activateEmergency = () => {
     setIsActivated(true);
-    setVoiceMessage("Emergency alert in 5 seconds");
+    setVoiceMessage("Emergency mode activated. Alert will be sent in 5 seconds. Tap cancel to stop.");
+    speak("Emergency mode activated. Sending alert in 5 seconds.", { priority: "high" });
 
     let count = 5;
-    const timer = setInterval(() => {
+    timerRef.current = setInterval(() => {
       count--;
       setCountdown(count);
-      setVoiceMessage(`Alert in ${count}`);
+      setVoiceMessage(`Sending alert in ${count} seconds`);
+      speak(`${count}`, { priority: "high" });
 
       if (count === 0) {
-        clearInterval(timer);
+        if (timerRef.current) clearInterval(timerRef.current);
         sendEmergencyAlert();
       }
     }, 1000);
@@ -32,18 +44,24 @@ const Emergency = () => {
 
   const sendEmergencyAlert = () => {
     setIsSent(true);
-    setVoiceMessage("Emergency alert sent. Location shared.");
+    setVoiceMessage("Emergency alert sent successfully. Your location has been sent to emergency services and your emergency contact.");
+    speak("Emergency alert sent. Your location has been shared with emergency services and your emergency contact. Help is on the way.", { priority: "high" });
   };
 
   const cancelEmergency = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
     setIsActivated(false);
     setCountdown(5);
-    setVoiceMessage("Cancelled");
+    setVoiceMessage("Emergency alert cancelled.");
+    speak("Alert cancelled.");
   };
 
   const handleVoiceCommand = () => {
     if (!isSent && !isActivated) {
-      activateEmergency();
+      speak("Activating emergency mode.");
+      setTimeout(() => activateEmergency(), 500);
     }
   };
 
@@ -74,16 +92,25 @@ const Emergency = () => {
         <Card className="mb-12 aspect-square bg-card border-4 border-destructive/40 rounded-3xl flex items-center justify-center p-10">
           {isSent ? (
             <div className="text-center space-y-8">
-              <CheckCircle className="h-40 w-40 mx-auto text-primary" aria-hidden="true" />
-              <p className="text-accessible-2xl font-bold text-primary">Alert Sent</p>
+              <CheckCircle className="h-40 w-40 mx-auto text-primary animate-pulse" aria-hidden="true" />
+              <p className="text-accessible-2xl font-bold text-primary leading-tight">
+                Emergency Alert Sent Successfully
+              </p>
+              <p className="text-accessible-lg text-muted-foreground">
+                Location shared with emergency services
+              </p>
             </div>
           ) : isActivated ? (
             <div className="text-center space-y-8">
               <AlertCircle className="h-40 w-40 mx-auto text-destructive animate-pulse" aria-hidden="true" />
               <p className="text-accessible-2xl font-extrabold text-destructive">{countdown}</p>
+              <p className="text-accessible-lg text-destructive/80">Sending alert...</p>
             </div>
           ) : (
-            <AlertCircle className="h-40 w-40 text-muted-foreground" aria-hidden="true" />
+            <div className="text-center space-y-6">
+              <AlertCircle className="h-40 w-40 mx-auto text-destructive/60" aria-hidden="true" />
+              <p className="text-accessible-xl text-muted-foreground">Ready to send emergency alert</p>
+            </div>
           )}
         </Card>
 

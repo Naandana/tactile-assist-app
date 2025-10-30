@@ -5,24 +5,27 @@ import { VoiceButton } from "@/components/VoiceButton";
 import { Navigation, ArrowLeft, MapPin } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import { speak } from "@/lib/speech";
 
 const Navigate = () => {
-  const [voiceMessage, setVoiceMessage] = useState("Say Navigate to start");
+  const [voiceMessage, setVoiceMessage] = useState("Where would you like to go? Say Navigate to start.");
   const [isNavigating, setIsNavigating] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const navigate = useNavigate();
 
   const navigationSteps = [
-    "Head north 50 meters",
-    "Turn right onto Oak Avenue",
-    "Continue straight 200 meters",
-    "Destination on the left",
+    "Starting navigation. Head north for 50 meters.",
+    "In 20 meters, turn right onto Oak Avenue.",
+    "Continue straight on Oak Avenue for 200 meters.",
+    "Your destination is on the left in 30 meters.",
+    "You have arrived at your destination."
   ];
 
   const startNavigation = () => {
     setIsNavigating(true);
     setCurrentStep(0);
     setVoiceMessage(navigationSteps[0]);
+    speak("Navigation started. " + navigationSteps[0], { slow: true });
   };
 
   const nextStep = () => {
@@ -30,17 +33,20 @@ const Navigate = () => {
       const next = currentStep + 1;
       setCurrentStep(next);
       setVoiceMessage(navigationSteps[next]);
+      speak(navigationSteps[next], { slow: true });
     } else {
       setIsNavigating(false);
-      setVoiceMessage("You have arrived");
+      setVoiceMessage("Navigation complete. You have arrived.");
+      speak("Navigation complete. You have arrived at your destination.");
     }
   };
 
   const handleVoiceCommand = () => {
     if (!isNavigating) {
-      startNavigation();
+      speak("Starting navigation now.");
+      setTimeout(() => startNavigation(), 500);
     } else {
-      nextStep();
+      setTimeout(() => nextStep(), 300);
     }
   };
 

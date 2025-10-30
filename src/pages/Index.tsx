@@ -1,29 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { VoiceButton } from "@/components/VoiceButton";
 import { FeatureCard } from "@/components/FeatureCard";
 import { VoiceFeedback } from "@/components/VoiceFeedback";
 import { Camera, FileText, Navigation, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { speak, initializeVoices } from "@/lib/speech";
 
 const Index = () => {
   const [voiceMessage, setVoiceMessage] = useState(
-    "Welcome. Say: Scan, Read, Navigate, or Emergency."
+    "Welcome to Accessibility Assistant. Say Scan, Read Text, Navigate, or Emergency."
   );
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Initialize voices on mount
+    initializeVoices();
+  }, []);
+
   const handleVoiceCommand = (command: string) => {
-    setVoiceMessage(`${command}`);
-    
-    const commandMap: Record<string, string> = {
-      Scan: "/scan",
-      Read: "/read",
-      Navigate: "/navigate",
-      Emergency: "/emergency",
+    const commandMap: Record<string, { route: string; message: string }> = {
+      Scan: { route: "/scan", message: "Opening scan feature" },
+      Read: { route: "/read", message: "Opening text reader" },
+      Navigate: { route: "/navigate", message: "Opening navigation" },
+      Emergency: { route: "/emergency", message: "Opening emergency mode" },
     };
     
-    const route = commandMap[command];
-    if (route) {
-      setTimeout(() => navigate(route), 800);
+    const action = commandMap[command];
+    if (action) {
+      setVoiceMessage(action.message);
+      speak(action.message);
+      setTimeout(() => navigate(action.route), 1000);
     }
   };
 

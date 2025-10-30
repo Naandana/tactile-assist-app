@@ -2,12 +2,13 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { VoiceFeedback } from "@/components/VoiceFeedback";
 import { VoiceButton } from "@/components/VoiceButton";
-import { FileText, ArrowLeft, Play, Pause } from "lucide-react";
+import { FileText, ArrowLeft, Play, Pause, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
+import { speak } from "@/lib/speech";
 
 const ReadText = () => {
-  const [voiceMessage, setVoiceMessage] = useState("Say Read or tap to upload");
+  const [voiceMessage, setVoiceMessage] = useState("Please upload an image with text to read aloud");
   const [extractedText, setExtractedText] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isReading, setIsReading] = useState(false);
@@ -18,36 +19,54 @@ const ReadText = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = () => {
-    setIsProcessing(true);
-    setVoiceMessage("Processing...");
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setIsProcessing(true);
+      setVoiceMessage("Processing image. Extracting text. Please wait.");
+      speak("Image uploaded. Processing text.");
 
-    setTimeout(() => {
-      const sampleTexts = [
-        "Welcome to our store. Opening hours: Monday to Friday, 9 AM to 6 PM.",
-        "Please take a number and wait. Thank you for your patience.",
-        "Ingredients: Flour, Sugar, Eggs, Butter, Vanilla Extract.",
-      ];
-      const text = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
-      setExtractedText(text);
-      setVoiceMessage("Text extracted. Tap play.");
-      setIsProcessing(false);
-    }, 2000);
+      setTimeout(() => {
+        const sampleTexts = [
+          "Welcome to Green Valley Market. Opening hours: Monday to Friday, 9 AM to 6 PM. Saturday 10 AM to 4 PM. Closed on Sundays.",
+          "Please take a number and wait to be called. Thank you for your patience. Current wait time is approximately 5 minutes.",
+          "Chocolate Chip Cookie Recipe. Ingredients: 2 cups all-purpose flour, 1 cup sugar, half cup brown sugar, 2 eggs, 1 cup butter, 1 teaspoon vanilla extract, half teaspoon baking soda, 2 cups chocolate chips.",
+          "Parking Notice. No parking in this area between 8 AM and 6 PM, Monday through Friday. Violators will be towed at owner's expense.",
+          "Medicine Instructions. Take one tablet twice daily with food. Do not exceed recommended dose. Keep out of reach of children. Store in a cool, dry place."
+        ];
+        const text = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
+        setExtractedText(text);
+        setVoiceMessage("Text extracted successfully. Ready to read aloud.");
+        speak("Text extraction complete. Tap the read button to hear it.");
+        setIsProcessing(false);
+      }, 2500);
+    }
   };
 
   const toggleReading = () => {
     if (!extractedText) return;
-    setIsReading(!isReading);
+    
     if (!isReading) {
-      setVoiceMessage(extractedText);
-      setTimeout(() => setIsReading(false), 5000);
+      setIsReading(true);
+      setVoiceMessage("Reading text aloud now...");
+      speak(extractedText, { slow: true });
+      
+      // Estimate reading time and auto-stop
+      const estimatedTime = (extractedText.split(' ').length / 2.5) * 1000;
+      setTimeout(() => {
+        setIsReading(false);
+        setVoiceMessage("Finished reading.");
+      }, estimatedTime);
     } else {
-      setVoiceMessage("Paused");
+      setIsReading(false);
+      window.speechSynthesis.cancel();
+      setVoiceMessage("Reading paused.");
+      speak("Paused.");
     }
   };
 
   const handleVoiceCommand = () => {
-    handleUpload();
+    speak("Opening file picker to upload image.");
+    setTimeout(() => handleUpload(), 500);
   };
 
   return (
@@ -111,11 +130,12 @@ const ReadText = () => {
             variant="tactile"
             size="xl"
             onClick={handleUpload}
+            disabled={isProcessing}
             className="w-full h-40 text-accessible-2xl font-bold rounded-3xl"
-            aria-label="Upload image"
+            aria-label="Upload image with text"
           >
-            <FileText className="h-20 w-20" aria-hidden="true" />
-            Upload
+            <Upload className="h-20 w-20 mr-3" aria-hidden="true" />
+            Upload Image
           </Button>
 
           <input

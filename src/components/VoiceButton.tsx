@@ -1,6 +1,7 @@
 import { Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
+import { speak } from "@/lib/speech";
 
 interface VoiceButtonProps {
   onVoiceCommand?: (command: string) => void;
@@ -13,9 +14,8 @@ export const VoiceButton = ({ onVoiceCommand, size = "xl", label = "Tap to speak
 
   useEffect(() => {
     if (isListening) {
-      // Visual and audio feedback
-      const utterance = new SpeechSynthesisUtterance("Listening");
-      window.speechSynthesis.speak(utterance);
+      // Visual and audio feedback with enhanced voice
+      speak("Listening", { priority: "high" });
     }
   }, [isListening]);
 
