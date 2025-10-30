@@ -14,13 +14,8 @@ export const VoiceFeedback = ({ message, autoSpeak = true }: VoiceFeedbackProps)
     if (message && autoSpeak) {
       setIsVisible(true);
       
-      // Use enhanced speech utility with slight delay for smooth delivery
-      setTimeout(() => {
-        speak(message, { slow: true });
-      }, 150);
-
       // Keep visible longer for longer messages
-      const displayTime = Math.max(4000, message.length * 50);
+      const displayTime = Math.max(5000, message.length * 60);
       const timer = setTimeout(() => setIsVisible(false), displayTime);
       
       return () => {

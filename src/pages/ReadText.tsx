@@ -19,13 +19,13 @@ const ReadText = () => {
     fileInputRef.current?.click();
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setIsProcessing(true);
       setVoiceMessage("Processing image. Extracting text. Please wait.");
-      speak("Image uploaded successfully. Processing text. Please wait.");
+      await speak("Image uploaded successfully. Processing text. Please wait.", { type: "confirmation" });
 
-      setTimeout(() => {
+      setTimeout(async () => {
         const sampleTexts = [
           "Welcome to Green Valley Market. Opening hours: Monday to Friday, 9 AM to 6 PM. Saturday 10 AM to 4 PM. Closed on Sundays.",
           "Please take a number and wait to be called. Thank you for your patience. Current wait time is approximately 5 minutes.",
@@ -35,50 +35,44 @@ const ReadText = () => {
         ];
         const text = sampleTexts[Math.floor(Math.random() * sampleTexts.length)];
         setExtractedText(text);
+        setIsProcessing(false);
+        
         setVoiceMessage("Text extracted successfully. Ready to read aloud.");
         
-        // Speak confirmation after brief delay
-        setTimeout(() => {
-          speak("Text extraction complete. Tap the read button to hear it.");
-        }, 300);
-        
-        setIsProcessing(false);
+        // Wait for UI update then speak
+        await new Promise(resolve => setTimeout(resolve, 400));
+        await speak("Text extraction complete. Tap the read button to hear it.", { type: "confirmation" });
       }, 2500);
     }
   };
 
-  const toggleReading = () => {
+  const toggleReading = async () => {
     if (!extractedText) return;
     
     if (!isReading) {
       setIsReading(true);
-      setVoiceMessage("Reading text aloud now.");
+      setVoiceMessage("Reading detected text now.");
       
-      // Start reading after brief delay
-      setTimeout(() => {
-        speak(extractedText, { slow: true });
-      }, 200);
+      // Wait briefly then read the actual detected text
+      await new Promise(resolve => setTimeout(resolve, 300));
+      await speak(`Detected text. ${extractedText}`, { slow: true, type: "confirmation" });
       
-      // Estimate reading time and auto-stop (average speaking rate: 2.5 words per second at slow speed)
-      const estimatedTime = (extractedText.split(' ').length / 2.5) * 1000 + 1000;
-      setTimeout(() => {
-        setIsReading(false);
-        setVoiceMessage("Finished reading.");
-        speak("Finished reading.");
-      }, estimatedTime);
+      // Mark as finished after speech completes
+      setIsReading(false);
+      setVoiceMessage("Finished reading.");
+      await speak("Finished reading.", { type: "confirmation" });
     } else {
       setIsReading(false);
       window.speechSynthesis.cancel();
-      setVoiceMessage("Reading paused.");
+      setVoiceMessage("Reading stopped.");
       
-      setTimeout(() => {
-        speak("Reading paused.");
-      }, 100);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      await speak("Reading stopped.", { type: "confirmation" });
     }
   };
 
-  const handleVoiceCommand = () => {
-    speak("Opening file picker to upload image.");
+  const handleVoiceCommand = async () => {
+    await speak("Opening file picker to upload image.", { type: "prompt" });
     setTimeout(() => handleUpload(), 500);
   };
 

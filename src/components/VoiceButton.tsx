@@ -15,7 +15,7 @@ export const VoiceButton = ({ onVoiceCommand, size = "xl", label = "Tap to speak
   useEffect(() => {
     if (isListening) {
       // Visual and audio feedback with enhanced voice
-      speak("Listening", { priority: "high" });
+      speak("Listening", { type: "prompt" });
     }
   }, [isListening]);
 

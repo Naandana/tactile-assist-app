@@ -1,13 +1,16 @@
 // Enhanced Text-to-Speech utility with natural voice selection
 
-export const speak = (text: string, options: { slow?: boolean; priority?: "high" | "normal" } = {}) => {
+export const speak = (text: string, options: { slow?: boolean; priority?: "high" | "normal"; type?: "prompt" | "confirmation" } = {}) => {
   if (!window.speechSynthesis) {
     console.warn("Speech synthesis not supported");
     return;
   }
 
-  // Cancel any ongoing speech
+  // Cancel any ongoing speech and wait for it to fully stop
   window.speechSynthesis.cancel();
+  
+  // Return a promise to allow chaining and ensure completion
+  return new Promise<void>((resolve) => {
 
   const utterance = new SpeechSynthesisUtterance(text);
   
@@ -51,26 +54,28 @@ export const speak = (text: string, options: { slow?: boolean; priority?: "high"
   }
 
   // Set speech parameters for natural, clear delivery
-  utterance.rate = options.slow ? 0.8 : 0.85; // Slower for better comprehension
-  utterance.pitch = 1.0;
+  utterance.rate = options.slow ? 0.75 : 0.8; // Slower for better comprehension
+  utterance.pitch = options.type === "prompt" ? 1.0 : 1.05; // Slightly higher pitch for confirmations
   utterance.volume = 1.0;
 
-  // Add natural pauses between sentences
+  // Add natural pauses between sentences for better clarity
   let enhancedText = text;
   if (text.includes('.') || text.includes('!') || text.includes('?')) {
-    // Add brief pause after punctuation for natural flow
-    enhancedText = text.replace(/([.!?])\s+/g, '$1  ');
+    // Replace punctuation with longer pauses
+    enhancedText = text.replace(/\.\s+/g, '.   ').replace(/!\s+/g, '!   ').replace(/\?\s+/g, '?   ');
   }
   
   utterance.text = enhancedText;
 
-  // Ensure previous speech is fully stopped before starting new one
-  window.speechSynthesis.cancel();
-  
-  // Small delay to ensure cancellation completes
+  // Event handlers for promise resolution
+  utterance.onend = () => resolve();
+  utterance.onerror = () => resolve();
+
+  // Small delay to ensure previous speech is fully cancelled
   setTimeout(() => {
     window.speechSynthesis.speak(utterance);
-  }, 100);
+  }, 150);
+  });
 };
 
 // Load voices (some browsers load them asynchronously)

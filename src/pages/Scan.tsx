@@ -14,12 +14,12 @@ const Scan = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
 
-  const handleScan = () => {
+  const handleScan = async () => {
     setIsScanning(true);
     setVoiceMessage("Scanning image. Please wait.");
-    speak("Scanning image. Please wait.");
+    await speak("Scanning image. Please wait.", { type: "prompt" });
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const objects = [
         "Coffee mug on a wooden table",
         "Black smartphone with cracked screen",
@@ -33,27 +33,26 @@ const Scan = () => {
       ];
       const detected = objects[Math.floor(Math.random() * objects.length)];
       setScannedObject(detected);
-      const resultMessage = `Object detected. ${detected}`;
+      setIsScanning(false);
+      
+      const resultMessage = `Object detected. ${detected}.`;
       setVoiceMessage(resultMessage);
       
-      // Speak the result after a brief delay to ensure smooth transition
-      setTimeout(() => {
-        speak(resultMessage, { slow: true });
-      }, 300);
-      
-      setIsScanning(false);
+      // Wait for UI to update, then speak result
+      await new Promise(resolve => setTimeout(resolve, 400));
+      await speak(resultMessage, { slow: true, type: "confirmation" });
     }, 2500);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      speak("Image uploaded successfully. Starting scan.");
+      await speak("Image uploaded successfully. Starting scan.", { type: "confirmation" });
       handleScan();
     }
   };
 
-  const handleVoiceCommand = () => {
-    speak("Opening camera to scan object.");
+  const handleVoiceCommand = async () => {
+    await speak("Opening camera to scan object.", { type: "prompt" });
     setTimeout(() => handleScan(), 500);
   };
 

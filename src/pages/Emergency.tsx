@@ -23,19 +23,19 @@ const Emergency = () => {
     };
   }, []);
 
-  const activateEmergency = () => {
+  const activateEmergency = async () => {
     setIsActivated(true);
     setVoiceMessage("Emergency mode activated. Alert will be sent in 5 seconds. Tap cancel to stop.");
-    speak("Emergency mode activated. Sending alert in 5 seconds. Tap cancel to stop.");
+    await speak("Emergency mode activated. Sending alert in 5 seconds. Tap cancel to stop.", { type: "prompt" });
 
     let count = 5;
-    timerRef.current = setInterval(() => {
+    timerRef.current = setInterval(async () => {
       count--;
       setCountdown(count);
       
       if (count > 0) {
         setVoiceMessage(`Sending alert in ${count} seconds`);
-        speak(`${count}`);
+        await speak(`${count}`, { type: "prompt" });
       } else {
         // Clear interval before sending alert to prevent overlap
         if (timerRef.current) clearInterval(timerRef.current);
@@ -44,30 +44,31 @@ const Emergency = () => {
     }, 1000);
   };
 
-  const sendEmergencyAlert = () => {
+  const sendEmergencyAlert = async () => {
     setIsSent(true);
     const message = "Emergency alert sent successfully. Your location has been shared with emergency services and your emergency contact. Help is on the way.";
     setVoiceMessage(message);
     
     // Ensure the full message is spoken without interruption
-    setTimeout(() => {
-      speak(message, { slow: true });
-    }, 200);
+    await new Promise(resolve => setTimeout(resolve, 300));
+    await speak(message, { slow: true, type: "confirmation" });
   };
 
-  const cancelEmergency = () => {
+  const cancelEmergency = async () => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
     }
+    window.speechSynthesis.cancel();
     setIsActivated(false);
     setCountdown(5);
     setVoiceMessage("Emergency alert cancelled.");
-    speak("Alert cancelled.");
+    await new Promise(resolve => setTimeout(resolve, 100));
+    await speak("Alert cancelled.", { type: "confirmation" });
   };
 
-  const handleVoiceCommand = () => {
+  const handleVoiceCommand = async () => {
     if (!isSent && !isActivated) {
-      speak("Activating emergency mode.");
+      await speak("Activating emergency mode.", { type: "prompt" });
       setTimeout(() => activateEmergency(), 500);
     }
   };
